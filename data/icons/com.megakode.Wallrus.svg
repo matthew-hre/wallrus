@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <!-- Background gradient (represents wallpaper generation) -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1c3f99"/>
+      <stop offset="50%" stop-color="#6a3d9a"/>
+      <stop offset="100%" stop-color="#e65980"/>
+    </linearGradient>
+    <!-- Tusk gradient -->
+    <linearGradient id="tuskGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0ebe0"/>
+      <stop offset="100%" stop-color="#d4c9b0"/>
+    </linearGradient>
+    <!-- Body gradient -->
+    <linearGradient id="bodyGrad" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#8ca0c0"/>
+      <stop offset="100%" stop-color="#5a7090"/>
+    </linearGradient>
+  </defs>
+
+  <!-- GNOME-style rounded square background -->
+  <rect x="4" y="4" width="120" height="120" rx="28" ry="28" fill="url(#bgGrad)"/>
+
+  <!-- Subtle pattern overlay to suggest wallpaper texture -->
+  <circle cx="30" cy="30" r="40" fill="#ffffff" opacity="0.04"/>
+  <circle cx="100" cy="100" r="35" fill="#ffffff" opacity="0.04"/>
+
+  <!-- Walrus body (simplified, friendly shape) -->
+  <ellipse cx="64" cy="72" rx="34" ry="30" fill="url(#bodyGrad)"/>
+
+  <!-- Walrus head -->
+  <ellipse cx="64" cy="52" rx="28" ry="22" fill="#7a94b8"/>
+
+  <!-- Snout / muzzle area -->
+  <ellipse cx="64" cy="60" rx="18" ry="12" fill="#9ab0cc"/>
+
+  <!-- Whisker dots (left side) -->
+  <circle cx="50" cy="57" r="2" fill="#6a849e"/>
+  <circle cx="47" cy="61" r="2" fill="#6a849e"/>
+  <circle cx="50" cy="65" r="2" fill="#6a849e"/>
+
+  <!-- Whisker dots (right side) -->
+  <circle cx="78" cy="57" r="2" fill="#6a849e"/>
+  <circle cx="81" cy="61" r="2" fill="#6a849e"/>
+  <circle cx="78" cy="65" r="2" fill="#6a849e"/>
+
+  <!-- Nose -->
+  <ellipse cx="64" cy="56" rx="5" ry="3.5" fill="#5a6e88"/>
+
+  <!-- Eyes -->
+  <circle cx="52" cy="47" r="4" fill="#2a3a50"/>
+  <circle cx="76" cy="47" r="4" fill="#2a3a50"/>
+  <!-- Eye highlights -->
+  <circle cx="53.5" cy="45.5" r="1.5" fill="#ffffff" opacity="0.8"/>
+  <circle cx="77.5" cy="45.5" r="1.5" fill="#ffffff" opacity="0.8"/>
+
+  <!-- Left tusk -->
+  <path d="M 54 64 Q 52 80, 50 90 Q 49 94, 52 93 Q 56 91, 57 80 Q 58 72, 57 64 Z" fill="url(#tuskGrad)" stroke="#c0b898" stroke-width="0.5"/>
+
+  <!-- Right tusk -->
+  <path d="M 74 64 Q 76 80, 78 90 Q 79 94, 76 93 Q 72 91, 71 80 Q 70 72, 71 64 Z" fill="url(#tuskGrad)" stroke="#c0b898" stroke-width="0.5"/>
+
+  <!-- Flippers (small, at the sides) -->
+  <ellipse cx="36" cy="85" rx="10" ry="6" fill="#6a849e" transform="rotate(-20 36 85)"/>
+  <ellipse cx="92" cy="85" rx="10" ry="6" fill="#6a849e" transform="rotate(20 92 85)"/>
+</svg>
