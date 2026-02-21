@@ -77,6 +77,7 @@ pub struct RendererState {
     pub speed: f32,
     pub blend: f32,
     pub swirl: f32,
+    pub noise: f32,
     // Current preset name
     pub current_preset: String,
 }
@@ -120,6 +121,7 @@ impl RendererState {
             speed: 1.0,
             blend: 0.5,
             swirl: 0.0,
+            noise: 0.0,
             current_preset: String::from("Gradient"),
         }
     }
@@ -190,6 +192,9 @@ impl RendererState {
                 }
                 if let Some(loc) = gl.get_uniform_location(program.id, "uSwirl") {
                     gl.uniform_1_f32(Some(&loc), self.swirl);
+                }
+                if let Some(loc) = gl.get_uniform_location(program.id, "uNoise") {
+                    gl.uniform_1_f32(Some(&loc), self.noise);
                 }
 
                 gl.bind_vertex_array(Some(self.vao));

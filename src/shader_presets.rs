@@ -90,6 +90,7 @@ uniform vec3 uColor3;
 uniform vec3 uColor4;
 uniform float uBlend;
 uniform float uSwirl;
+uniform float uNoise;
 
 vec2 swirlUV(vec2 uv) {
     vec2 c = uv - 0.5;
@@ -102,11 +103,7 @@ vec2 swirlUV(vec2 uv) {
 
 vec3 paletteColor(float t) {
     t = clamp(t, 0.0, 1.0);
-    // 4 equal bands: boundaries at 0.25, 0.5, 0.75
-    // uBlend 0 = hard edges, 1 = fully smooth
-    // Fade half-width: 0 at blend=0, 0.25 at blend=1
     float fw = uBlend * 0.25;
-    // Compute blend factors between adjacent color pairs
     float f1 = (fw > 0.0001) ? smoothstep(0.25 - fw, 0.25 + fw, t) : step(0.25, t);
     float f2 = (fw > 0.0001) ? smoothstep(0.50 - fw, 0.50 + fw, t) : step(0.50, t);
     float f3 = (fw > 0.0001) ? smoothstep(0.75 - fw, 0.75 + fw, t) : step(0.75, t);
@@ -115,6 +112,12 @@ vec3 paletteColor(float t) {
     color = mix(color, uColor3, f2);
     color = mix(color, uColor4, f3);
     return color;
+}
+
+float hash(vec2 p) {
+    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
 }
 "#,
     r#"
@@ -127,6 +130,10 @@ void main() {
     float t = dot(uv - 0.5, dir) + 0.5;
     t = clamp(t, 0.0, 1.0);
     vec3 color = paletteColor(t);
+    // Apply noise grain
+    float n = hash(gl_FragCoord.xy) * 2.0 - 1.0;
+    color += n * uNoise * 0.3;
+    color = clamp(color, 0.0, 1.0);
     fragColor = vec4(color, 1.0);
 }
 "#
@@ -146,6 +153,7 @@ uniform vec3 uColor3;
 uniform vec3 uColor4;
 uniform float uBlend;
 uniform float uSwirl;
+uniform float uNoise;
 
 vec2 swirlUV(vec2 uv) {
     vec2 c = uv - 0.5;
@@ -167,6 +175,12 @@ vec3 paletteColor(float t) {
     color = mix(color, uColor3, f2);
     color = mix(color, uColor4, f3);
     return color;
+}
+
+float hash(vec2 p) {
+    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
 }
 "#,
     r#"
@@ -191,6 +205,10 @@ void main() {
     float t = sin(v * 3.14159) * 0.5 + 0.5;
 
     vec3 color = paletteColor(t);
+    // Apply noise grain
+    float n = hash(gl_FragCoord.xy) * 2.0 - 1.0;
+    color += n * uNoise * 0.3;
+    color = clamp(color, 0.0, 1.0);
     fragColor = vec4(color, 1.0);
 }
 "#
@@ -211,6 +229,7 @@ uniform vec3 uColor3;
 uniform vec3 uColor4;
 uniform float uBlend;
 uniform float uSwirl;
+uniform float uNoise;
 
 vec2 swirlUV(vec2 uv) {
     vec2 c = uv - 0.5;
@@ -232,6 +251,12 @@ vec3 paletteColor(float t) {
     color = mix(color, uColor3, f2);
     color = mix(color, uColor4, f3);
     return color;
+}
+
+float hash(vec2 p) {
+    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
 }
 "#,
     r#"
@@ -261,6 +286,10 @@ void main() {
     t = t * t * (3.0 - 2.0 * t);
 
     vec3 color = paletteColor(t);
+    // Apply noise grain
+    float n = hash(gl_FragCoord.xy) * 2.0 - 1.0;
+    color += n * uNoise * 0.3;
+    color = clamp(color, 0.0, 1.0);
     fragColor = vec4(color, 1.0);
 }
 "#

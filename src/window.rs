@@ -212,6 +212,19 @@ impl WallrusWindow {
         let blend_row = adw::ActionRow::builder().title("Blend").build();
         blend_row.add_suffix(&blend_scale);
 
+        // --- Controls group ---
+        let controls_group = adw::PreferencesGroup::new();
+        controls_group.set_title("Shader");
+        controls_group.add(&preset_row);
+        controls_group.add(&angle_row);
+        controls_group.add(&scale_row);
+        controls_group.add(&speed_row);
+        controls_group.add(&blend_row);
+
+        // =====================================================================
+        // Effects section — fullscreen effects applied to all shaders
+        // =====================================================================
+
         // --- Swirl slider ---
         let swirl_scale = gtk4::Scale::with_range(gtk4::Orientation::Horizontal, -10.0, 10.0, 0.1);
         swirl_scale.set_value(0.0);
@@ -222,15 +235,20 @@ impl WallrusWindow {
         let swirl_row = adw::ActionRow::builder().title("Swirl").build();
         swirl_row.add_suffix(&swirl_scale);
 
-        // --- Controls group ---
-        let controls_group = adw::PreferencesGroup::new();
-        controls_group.set_title("Shader");
-        controls_group.add(&preset_row);
-        controls_group.add(&angle_row);
-        controls_group.add(&scale_row);
-        controls_group.add(&speed_row);
-        controls_group.add(&blend_row);
-        controls_group.add(&swirl_row);
+        // --- Noise slider ---
+        let noise_scale = gtk4::Scale::with_range(gtk4::Orientation::Horizontal, 0.0, 1.0, 0.01);
+        noise_scale.set_value(0.0);
+        noise_scale.set_hexpand(true);
+        noise_scale.set_draw_value(true);
+        noise_scale.set_value_pos(gtk4::PositionType::Right);
+
+        let noise_row = adw::ActionRow::builder().title("Noise").build();
+        noise_row.add_suffix(&noise_scale);
+
+        let effects_group = adw::PreferencesGroup::new();
+        effects_group.set_title("Effects");
+        effects_group.add(&swirl_row);
+        effects_group.add(&noise_row);
 
         // =====================================================================
         // Export section
@@ -300,6 +318,7 @@ impl WallrusWindow {
         right_box.set_margin_bottom(12);
         right_box.set_hexpand(true);
         right_box.append(&preview_group);
+        right_box.append(&effects_group);
         right_box.append(&export_group);
         right_box.append(&button_box);
 
@@ -463,6 +482,16 @@ impl WallrusWindow {
             swirl_scale.connect_value_changed(move |scale| {
                 if let Some(ref mut renderer) = *state.borrow_mut() {
                     renderer.swirl = scale.value() as f32;
+                }
+            });
+        }
+
+        // --- Noise change ---
+        {
+            let state = state.clone();
+            noise_scale.connect_value_changed(move |scale| {
+                if let Some(ref mut renderer) = *state.borrow_mut() {
+                    renderer.noise = scale.value() as f32;
                 }
             });
         }
