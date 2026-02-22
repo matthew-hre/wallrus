@@ -1224,7 +1224,7 @@ impl WallrusWindow {
                     .application_name("Wallrus")
                     .application_icon("com.megakode.Wallrus")
                     .developer_name("Peter Boné")
-                    .version("0.1.0")
+                    .version(env!("CARGO_PKG_VERSION"))
                     .website("https://github.com/megakode/wallrus")
                     .issue_url("https://github.com/megakode/wallrus/issues")
                     .license_type(gtk4::License::Gpl30)

@@ -15,6 +15,14 @@ impl WallrusApplication {
             .flags(gio::ApplicationFlags::FLAGS_NONE)
             .build();
 
+        app.connect_startup(|_| {
+            // Use AdwStyleManager to follow the system color scheme.
+            // This is the correct replacement for the deprecated
+            // gtk-application-prefer-dark-theme GtkSettings flag.
+            let style = adw::StyleManager::default();
+            style.set_color_scheme(adw::ColorScheme::Default);
+        });
+
         app.connect_activate(Self::on_activate);
 
         Self { app }
