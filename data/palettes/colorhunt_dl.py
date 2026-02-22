@@ -2,7 +2,7 @@
 """
 ColorHunt Palette Downloader
 
-Crawls colorhunt.co and generates 400x400 palette images locally from hex codes.
+Crawls colorhunt.co and generates 400x400 palette images locally from hex codes to not hammer their download.
 
 Usage:
     python colorhunt_dl.py pastel                    # download 100 pastel palettes
@@ -11,7 +11,7 @@ Usage:
     python colorhunt_dl.py sunset -o ./my_dir         # custom output directory
     python colorhunt_dl.py --list-categories          # show available categories
 
-Images are saved to ./wallpaper/data/palettes/<category>/ by default.
+Images are saved to ./<category>/ by default.
 
 Categories:
     pastel, vintage, retro, neon, gold, light, dark, warm, cold, summer, fall,
@@ -220,7 +220,7 @@ def main() -> None:
         "--output", "-o",
         type=str,
         default=None,
-        help="Output directory for images (default: ./wallpaper/data/palettes/<category>)",
+        help="Output directory for images (default: ./<category>)",
     )
     parser.add_argument(
         "--delay", "-d",
@@ -258,7 +258,7 @@ def main() -> None:
     if category not in CATEGORIES:
         print(f"Warning: '{category}' is not a known category. Proceeding anyway...")
 
-    output_dir = Path(args.output) if args.output else Path(f"./wallpaper/data/palettes/{category}")
+    output_dir = Path(args.output) if args.output else Path(f"./{category}")
 
     crawl_and_download(
         output_dir=output_dir,
