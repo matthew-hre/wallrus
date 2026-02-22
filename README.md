@@ -8,11 +8,15 @@ For those who prefer minimalist, colorful wallpapers and like changing colors on
 
 
 ## Example wallpapers
-![wallrus_terrain_1771756626](https://github.com/user-attachments/assets/2e8b0ea2-9be6-43ee-8d9c-2e3e74b126e9)
-![wallrus_terrain_1771756619](https://github.com/user-attachments/assets/63703046-5cd5-4c22-b9e1-84f866ff113b)
-![wallrus_plasma_1771756557](https://github.com/user-attachments/assets/f1bbb1e9-d360-4270-9c8c-683e3b7b21f6)
-![wallrus_bars_1771756517](https://github.com/user-attachments/assets/0583e2d6-e3d9-4a4f-9286-463cb33a6746)
-![wallrus_bars_1771756489](https://github.com/user-attachments/assets/f12ec4db-34b7-400f-9e0e-4159d2e00d77)
+
+![wallrus_bars_1771764551](https://github.com/user-attachments/assets/880a55a9-7b80-4d2c-86c9-3dd51da19a89)
+![wallrus_bars_1771764536](https://github.com/user-attachments/assets/0034302e-1204-4ff7-8cf9-97c80ae61de6)
+![wallrus_waves_1771764682](https://github.com/user-attachments/assets/898a8c7d-07df-46fc-b939-60f2d840ff38)
+![wallrus_terrain_1771764802](https://github.com/user-attachments/assets/95c61466-47df-45a0-92fe-bd17d4bb6c88)
+![wallrus_terrain_1771764772](https://github.com/user-attachments/assets/bf52c0e1-2557-4af6-aa68-09e5253862e5)
+![wallrus_circle_1771764645](https://github.com/user-attachments/assets/f5ef79bd-56b1-4561-9c0c-65b11512611f)
+
+
 
 ## Features
 
