@@ -77,21 +77,21 @@ Build a GNOME application called **Wallrus** (app ID: `com.megakode.Wallrus`) th
 
 ## Relevant files / directories
 
-- `/home/sbeam/code/wallpaper/Cargo.toml` — Project config (gtk4 0.9 w/ v4_10, libadwaita 0.7 w/ v1_4, glow 0.14, image 0.25, dirs 5.0, libc 0.2). 19 lines.
-- `/home/sbeam/code/wallpaper/src/main.rs` — Entry point (has `mod palette`). 17 lines.
-- `/home/sbeam/code/wallpaper/src/application.rs` — AdwApplication setup. 31 lines.
-- `/home/sbeam/code/wallpaper/src/palette.rs` — Category-aware palette image extraction + directory listing. Scans bundled `data/palettes/` and user `~/.local/share/wallrus/palettes/`. 178 lines.
-- `/home/sbeam/code/wallpaper/src/gl_renderer.rs` — GL context, RendererState (all uniform fields: color1-4, angle, scale, speed, blend, distort_type, distort_strength, ripple_freq, noise, center, dither, lighting_type, light_strength, bevel_width, light_angle), fullscreen quad, render-to-pixels. Contains `gl_loader` module for EGL/GLX dynamic loading.
-- `/home/sbeam/code/wallpaper/src/shader_presets.rs` — 5 shader presets (Bars, Circle, Plasma, Waves, Terrain) with embedded GLSL fragment sources. Each shader includes shared functions (swirlUV, rippleUV, distortUV, paletteColor, applyLighting, hash, bayer4x4, applyDither) via `concat!`. PresetControls struct with `has_angle`, `has_scale`, `has_speed`, `has_center`, `speed_label`, `speed_range`, `scale_range`.
-- `/home/sbeam/code/wallpaper/src/window.rs` — Two-column layout: left (palette + pattern controls with blend/center hints), right (preview + effects with distortion dropdown/strength/frequency + noise/dither + lighting with type/strength/width/angle + export). All UI construction and signal wiring.
-- `/home/sbeam/code/wallpaper/src/shader.rs` — ShaderProgram compilation and linking. 65 lines.
-- `/home/sbeam/code/wallpaper/src/export.rs` — Image export (PNG/JPEG at 1080p/1440p/4K). Auto-detects best default resolution from display. 119 lines.
-- `/home/sbeam/code/wallpaper/src/wallpaper.rs` — GNOME wallpaper setting via gsettings (light + dark URIs). 34 lines.
-- `/home/sbeam/code/wallpaper/install.sh` — Build + install script (release binary, desktop file, icon, metainfo, palettes to `~/.local` prefix). 57 lines.
-- `/home/sbeam/code/wallpaper/data/palettes/` — Bundled palette PNGs in category subfolders (cold, dark, fall, gradient, light, pastel, retro, sunset, warm, winter). ~1,459 palette images total.
-- `/home/sbeam/code/wallpaper/data/icons/com.megakode.Wallrus.svg` — App icon.
-- `/home/sbeam/code/wallpaper/data/com.megakode.Wallrus.desktop` — Desktop entry.
-- `/home/sbeam/code/wallpaper/data/com.megakode.Wallrus.metainfo.xml` — AppStream metadata.
+- `Cargo.toml` — Project config (gtk4 0.9 w/ v4_10, libadwaita 0.7 w/ v1_4, glow 0.14, image 0.25, dirs 5.0, libc 0.2). 19 lines.
+- `src/main.rs` — Entry point (has `mod palette`). 17 lines.
+- `src/application.rs` — AdwApplication setup. 31 lines.
+- `src/palette.rs` — Category-aware palette image extraction + directory listing. Scans bundled `data/palettes/` and user `~/.local/share/wallrus/palettes/`. 178 lines.
+- `src/gl_renderer.rs` — GL context, RendererState (all uniform fields: color1-4, angle, scale, speed, blend, distort_type, distort_strength, ripple_freq, noise, center, dither, lighting_type, light_strength, bevel_width, light_angle), fullscreen quad, render-to-pixels. Contains `gl_loader` module for EGL/GLX dynamic loading.
+- `src/shader_presets.rs` — 5 shader presets (Bars, Circle, Plasma, Waves, Terrain) with embedded GLSL fragment sources. Each shader includes shared functions (swirlUV, rippleUV, distortUV, paletteColor, applyLighting, hash, bayer4x4, applyDither) via `concat!`. PresetControls struct with `has_angle`, `has_scale`, `has_speed`, `has_center`, `speed_label`, `speed_range`, `scale_range`.
+- `src/window.rs` — Two-column layout: left (palette + pattern controls with blend/center hints), right (preview + effects with distortion dropdown/strength/frequency + noise/dither + lighting with type/strength/width/angle + export). All UI construction and signal wiring.
+- `src/shader.rs` — ShaderProgram compilation and linking. 65 lines.
+- `src/export.rs` — Image export (PNG/JPEG at 1080p/1440p/4K). Auto-detects best default resolution from display. 119 lines.
+- `src/wallpaper.rs` — GNOME wallpaper setting via gsettings (light + dark URIs). 34 lines.
+- `install.sh` — Build + install script (release binary, desktop file, icon, metainfo, palettes to `~/.local` prefix). 57 lines.
+- `data/palettes/` — Bundled palette PNGs in category subfolders (cold, dark, fall, gradient, light, pastel, retro, sunset, warm, winter). ~1,459 palette images total.
+- `data/icons/com.megakode.Wallrus.svg` — App icon.
+- `data/com.megakode.Wallrus.desktop` — Desktop entry.
+- `data/com.megakode.Wallrus.metainfo.xml` — AppStream metadata.
 
 ## Architecture
 
