@@ -300,7 +300,7 @@ impl WallrusWindow {
         let distort_dropdown = gtk4::DropDown::new(Some(distort_list), gtk4::Expression::NONE);
         distort_dropdown.set_selected(0);
 
-        let distort_row = adw::ActionRow::builder().title("Distortion").build();
+        let distort_row = adw::ActionRow::builder().title("Type").build();
         distort_row.add_suffix(&distort_dropdown);
         distort_row.set_activatable_widget(Some(&distort_dropdown));
 
@@ -426,13 +426,16 @@ impl WallrusWindow {
         dither_row.add_suffix(&dither_switch);
         dither_row.set_activatable_widget(Some(&dither_switch));
 
+        let distortion_group = adw::PreferencesGroup::new();
+        distortion_group.set_title("Distortion");
+        distortion_group.add(&distort_row);
+        distortion_group.add(&distort_strength_row);
+        distortion_group.add(&distort_strength_hint_row);
+        distortion_group.add(&ripple_freq_row);
+        distortion_group.add(&ripple_freq_hint_row);
+
         let effects_group = adw::PreferencesGroup::new();
         effects_group.set_title("Effects");
-        effects_group.add(&distort_row);
-        effects_group.add(&distort_strength_row);
-        effects_group.add(&distort_strength_hint_row);
-        effects_group.add(&ripple_freq_row);
-        effects_group.add(&ripple_freq_hint_row);
         effects_group.add(&noise_row);
         effects_group.add(&noise_hint_row);
         effects_group.add(&dither_row);
@@ -631,6 +634,7 @@ impl WallrusWindow {
         right_box.set_margin_bottom(12);
         right_box.set_hexpand(true);
         right_box.append(&preview_group);
+        right_box.append(&distortion_group);
         right_box.append(&effects_group);
         right_box.append(&lighting_group);
         right_box.append(&export_group);
