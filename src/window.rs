@@ -89,8 +89,8 @@ impl WallrusWindow {
 
         let palette_scroll = gtk4::ScrolledWindow::new();
         palette_scroll.set_child(Some(&palette_flowbox));
-        palette_scroll.set_min_content_height(200);
-        palette_scroll.set_max_content_height(200);
+        palette_scroll.set_min_content_height(280);
+        palette_scroll.set_max_content_height(280);
         palette_scroll.set_propagate_natural_height(false);
         palette_scroll.set_policy(gtk4::PolicyType::Never, gtk4::PolicyType::Automatic);
 
@@ -656,8 +656,8 @@ impl WallrusWindow {
         let window = adw::ApplicationWindow::builder()
             .application(app)
             .title("Wallrus")
-            .default_width(1100)
-            .default_height(700)
+            .default_width(1300)
+            .default_height(900)
             .content(&toast_overlay)
             .build();
 
