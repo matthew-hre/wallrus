@@ -4,8 +4,7 @@ A user-friendly GNOME (GTK4) application for generating colorful abstract wallpa
 
 For those who prefer minimalist, colorful wallpapers and like changing colors once in a while to keep things fresh.
 
-<img width="1164" height="753" alt="Screenshot From 2026-02-22 11-51-12" src="https://github.com/user-attachments/assets/09dd81eb-cb49-47dc-89d3-fca411416c53" />
-
+<img width="1524" height="1008" alt="Screenshot From 2026-02-22 13-47-33" src="https://github.com/user-attachments/assets/433b41b7-b2b8-409f-8d6b-f8bd552f44e6" />
 
 
 ## Example wallpapers
