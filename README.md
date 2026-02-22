@@ -34,7 +34,7 @@ For those who prefer minimalist, colorful wallpapers and like changing colors on
 - **Export** — PNG or JPEG at 1080p, 1440p, or 4K (default auto-detected from
   your display)
 - **Set as wallpaper** — writes to `~/.local/share/backgrounds/` and applies
-  via `gsettings` for both light and dark mode
+  via `gsettings`. Possibility to set either light/dark mode wallpaper.
 - **Custom palettes** — drop 1×4 px palette images into
   `~/.local/share/wallrus/palettes/<category>/` and they appear automatically
 - **Keyboard shortcuts** — Ctrl+E (export PNG), Ctrl+Shift+E (export JPEG),
