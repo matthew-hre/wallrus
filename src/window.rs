@@ -574,20 +574,10 @@ impl WallrusWindow {
         // Export section
         // =====================================================================
 
-        let resolution_list = gtk4::StringList::new(&[
-            ExportResolution::Hd.label(),
-            ExportResolution::Qhd.label(),
-            ExportResolution::Uhd4k.label(),
-        ]);
-        let resolution_row = adw::ComboRow::new();
-        resolution_row.set_title("Resolution");
-        resolution_row.set_model(Some(&resolution_list));
-
-        // Default to the resolution closest to the current display
-        let default_res_idx = gdk::Display::default()
+        // Detect the largest monitor's resolution for the "Display" option
+        let display_dims: (u32, u32) = gdk::Display::default()
             .and_then(|display| {
                 let monitors = display.monitors();
-                // Find the largest monitor by pixel count
                 let mut best: Option<(i32, i32)> = None;
                 for i in 0..monitors.n_items() {
                     if let Some(obj) = monitors.item(i) {
@@ -602,12 +592,22 @@ impl WallrusWindow {
                 }
                 best
             })
-            .map(|(w, h)| ExportResolution::best_index_for_display(w, h))
-            .unwrap_or(0);
-        resolution_row.set_selected(default_res_idx);
+            .map(|(w, h)| (w as u32, h as u32))
+            .unwrap_or((1920, 1080));
+
+        let display_label = format!("Display ({}x{})", display_dims.0, display_dims.1);
+        let resolution_list = gtk4::StringList::new(&[
+            &display_label,
+            "1080p (1920x1080)",
+            "1440p (2560x1440)",
+            "4K (3840x2160)",
+        ]);
+        let resolution_row = adw::ComboRow::new();
+        resolution_row.set_title("Resolution");
+        resolution_row.set_model(Some(&resolution_list));
+        resolution_row.set_selected(0); // Default to Display
 
         let export_png_button = gtk4::Button::with_label("Export PNG");
-        export_png_button.add_css_class("suggested-action");
         export_png_button.set_tooltip_text(Some("Export as PNG (Ctrl+E)"));
 
         let export_jpg_button = gtk4::Button::with_label("Export JPEG");
@@ -1065,7 +1065,8 @@ impl WallrusWindow {
             let gl_area = gl_area.clone();
             let window_ref = window.clone();
             move |_button: &gtk4::Button| {
-                let resolution = ExportResolution::from_index(resolution_row.selected());
+                let resolution =
+                    ExportResolution::from_index(resolution_row.selected(), display_dims);
                 let (w, h) = resolution.dimensions();
 
                 gl_area.make_current();
@@ -1131,7 +1132,8 @@ impl WallrusWindow {
             let gl_area = gl_area.clone();
             let window_ref = window.clone();
             set_wallpaper_button.connect_clicked(move |_| {
-                let resolution = ExportResolution::from_index(resolution_row.selected());
+                let resolution =
+                    ExportResolution::from_index(resolution_row.selected(), display_dims);
                 let (w, h) = resolution.dimensions();
 
                 gl_area.make_current();

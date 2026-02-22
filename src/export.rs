@@ -4,58 +4,32 @@ use std::path::PathBuf;
 /// Export resolution presets
 #[derive(Debug, Clone, Copy)]
 pub enum ExportResolution {
-    Hd,    // 1920x1080
-    Qhd,   // 2560x1440
-    Uhd4k, // 3840x2160
+    Display(u32, u32), // Current monitor resolution
+    Hd,                // 1920x1080
+    Qhd,               // 2560x1440
+    Uhd4k,             // 3840x2160
 }
 
 impl ExportResolution {
     pub fn dimensions(self) -> (u32, u32) {
         match self {
+            ExportResolution::Display(w, h) => (w, h),
             ExportResolution::Hd => (1920, 1080),
             ExportResolution::Qhd => (2560, 1440),
             ExportResolution::Uhd4k => (3840, 2160),
         }
     }
 
-    pub fn label(self) -> &'static str {
-        match self {
-            ExportResolution::Hd => "1080p (1920x1080)",
-            ExportResolution::Qhd => "1440p (2560x1440)",
-            ExportResolution::Uhd4k => "4K (3840x2160)",
-        }
-    }
-
-    pub fn from_index(index: u32) -> Self {
+    /// Build from ComboRow index. Index 0 = Display (requires dimensions),
+    /// 1 = HD, 2 = QHD, 3 = 4K.
+    pub fn from_index(index: u32, display_dims: (u32, u32)) -> Self {
         match index {
-            0 => ExportResolution::Hd,
-            1 => ExportResolution::Qhd,
-            2 => ExportResolution::Uhd4k,
+            0 => ExportResolution::Display(display_dims.0, display_dims.1),
+            1 => ExportResolution::Hd,
+            2 => ExportResolution::Qhd,
+            3 => ExportResolution::Uhd4k,
             _ => ExportResolution::Hd,
         }
-    }
-
-    /// Returns the index of the resolution preset closest to the given
-    /// display dimensions (by total pixel count).
-    pub fn best_index_for_display(width: i32, height: i32) -> u32 {
-        let display_pixels = (width as u64) * (height as u64);
-        let resolutions = [
-            ExportResolution::Hd,
-            ExportResolution::Qhd,
-            ExportResolution::Uhd4k,
-        ];
-        let mut best_idx = 0u32;
-        let mut best_diff = u64::MAX;
-        for (i, res) in resolutions.iter().enumerate() {
-            let (w, h) = res.dimensions();
-            let pixels = (w as u64) * (h as u64);
-            let diff = display_pixels.abs_diff(pixels);
-            if diff < best_diff {
-                best_diff = diff;
-                best_idx = i as u32;
-            }
-        }
-        best_idx
     }
 }
 
