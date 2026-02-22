@@ -175,6 +175,41 @@ impl WallrusWindow {
         palette_listbox_row.set_selectable(false);
         palette_group.add(&palette_listbox_row);
 
+        // --- Color picker buttons (4, one per color band) ---
+        let color_dialog = gtk4::ColorDialog::new();
+        color_dialog.set_with_alpha(false);
+
+        let default_colors: [[f32; 3]; 4] = [
+            [0.11, 0.25, 0.60],
+            [0.90, 0.35, 0.50],
+            [0.20, 0.60, 0.40],
+            [0.80, 0.70, 0.20],
+        ];
+
+        let color_buttons: Vec<gtk4::ColorDialogButton> = default_colors
+            .iter()
+            .map(|c| {
+                let rgba = gdk::RGBA::new(c[0], c[1], c[2], 1.0);
+                let btn = gtk4::ColorDialogButton::new(Some(color_dialog.clone()));
+                btn.set_rgba(&rgba);
+                btn
+            })
+            .collect();
+
+        let color_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
+        color_box.set_halign(gtk4::Align::Center);
+        color_box.set_margin_top(8);
+        color_box.set_margin_bottom(8);
+        for btn in &color_buttons {
+            color_box.append(btn);
+        }
+
+        let color_picker_row = gtk4::ListBoxRow::new();
+        color_picker_row.set_child(Some(&color_box));
+        color_picker_row.set_activatable(false);
+        color_picker_row.set_selectable(false);
+        palette_group.add(&color_picker_row);
+
         // =====================================================================
         // Shader parameter sliders
         // =====================================================================
@@ -691,6 +726,10 @@ impl WallrusWindow {
         {
             let paths = palette_paths.clone();
             let state = state.clone();
+            let cb0 = color_buttons[0].clone();
+            let cb1 = color_buttons[1].clone();
+            let cb2 = color_buttons[2].clone();
+            let cb3 = color_buttons[3].clone();
             palette_flowbox.connect_child_activated(move |_flowbox, child| {
                 let idx = child.index() as usize;
                 let paths_ref = paths.borrow();
@@ -703,11 +742,74 @@ impl WallrusWindow {
                                 renderer.color3 = colors[2];
                                 renderer.color4 = colors[3];
                             }
+                            // Update color picker buttons to reflect extracted colors
+                            cb0.set_rgba(&gdk::RGBA::new(
+                                colors[0][0],
+                                colors[0][1],
+                                colors[0][2],
+                                1.0,
+                            ));
+                            cb1.set_rgba(&gdk::RGBA::new(
+                                colors[1][0],
+                                colors[1][1],
+                                colors[1][2],
+                                1.0,
+                            ));
+                            cb2.set_rgba(&gdk::RGBA::new(
+                                colors[2][0],
+                                colors[2][1],
+                                colors[2][2],
+                                1.0,
+                            ));
+                            cb3.set_rgba(&gdk::RGBA::new(
+                                colors[3][0],
+                                colors[3][1],
+                                colors[3][2],
+                                1.0,
+                            ));
                         }
                         Err(e) => {
                             eprintln!("Failed to extract colors from '{}': {}", path.display(), e);
                         }
                     }
+                }
+            });
+        }
+
+        // --- Color picker manual change handlers ---
+        {
+            let state = state.clone();
+            color_buttons[0].connect_rgba_notify(move |btn| {
+                let rgba = btn.rgba();
+                if let Some(ref mut renderer) = *state.borrow_mut() {
+                    renderer.color1 = [rgba.red(), rgba.green(), rgba.blue()];
+                }
+            });
+        }
+        {
+            let state = state.clone();
+            color_buttons[1].connect_rgba_notify(move |btn| {
+                let rgba = btn.rgba();
+                if let Some(ref mut renderer) = *state.borrow_mut() {
+                    renderer.color2 = [rgba.red(), rgba.green(), rgba.blue()];
+                }
+            });
+        }
+        {
+            let state = state.clone();
+            color_buttons[2].connect_rgba_notify(move |btn| {
+                let rgba = btn.rgba();
+                if let Some(ref mut renderer) = *state.borrow_mut() {
+                    renderer.color3 = [rgba.red(), rgba.green(), rgba.blue()];
+                }
+            });
+        }
+        {
+            let state = state.clone();
+            color_buttons[3].connect_rgba_notify(move |btn| {
+                let rgba = btn.rgba();
+                if let Some(ref mut renderer) = *state.borrow_mut() {
+                    renderer.color4 = [rgba.red(), rgba.green(), rgba.blue()];
                 }
             });
         }
