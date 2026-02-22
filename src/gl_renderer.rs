@@ -78,6 +78,7 @@ pub struct RendererState {
     pub blend: f32,
     pub swirl: f32,
     pub noise: f32,
+    pub center: f32,
     // Current preset name
     pub current_preset: String,
 }
@@ -122,7 +123,8 @@ impl RendererState {
             blend: 0.5,
             swirl: 0.0,
             noise: 0.0,
-            current_preset: String::from("Gradient"),
+            center: 0.0,
+            current_preset: String::from("Bars"),
         }
     }
 
@@ -195,6 +197,9 @@ impl RendererState {
                 }
                 if let Some(loc) = gl.get_uniform_location(program.id, "uNoise") {
                     gl.uniform_1_f32(Some(&loc), self.noise);
+                }
+                if let Some(loc) = gl.get_uniform_location(program.id, "uCenter") {
+                    gl.uniform_1_f32(Some(&loc), self.center);
                 }
 
                 gl.bind_vertex_array(Some(self.vao));
@@ -330,7 +335,7 @@ pub fn create_gl_area(state: SharedRendererState) -> GLArea {
         };
 
         let mut renderer = RendererState::new(gl);
-        if let Err(e) = renderer.load_preset("Gradient") {
+        if let Err(e) = renderer.load_preset("Bars") {
             eprintln!("Failed to load initial shader: {}", e);
         }
 

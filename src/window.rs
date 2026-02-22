@@ -241,6 +241,38 @@ impl WallrusWindow {
         blend_hint_row.set_activatable(false);
         blend_hint_row.set_selectable(false);
 
+        // --- Center slider ---
+        let center_scale = gtk4::Scale::with_range(gtk4::Orientation::Horizontal, -1.0, 1.0, 0.01);
+        center_scale.set_value(0.0);
+        center_scale.set_hexpand(true);
+        center_scale.set_draw_value(true);
+        center_scale.set_value_pos(gtk4::PositionType::Right);
+
+        let center_row = adw::ActionRow::builder().title("Center").build();
+        center_row.add_suffix(&center_scale);
+
+        // Hint labels below the center slider
+        let center_hints = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
+        let center_left_label = gtk4::Label::new(Some("left"));
+        center_left_label.add_css_class("dim-label");
+        center_left_label.add_css_class("caption");
+        center_left_label.set_halign(gtk4::Align::Start);
+        center_left_label.set_hexpand(true);
+        let center_right_label = gtk4::Label::new(Some("right"));
+        center_right_label.add_css_class("dim-label");
+        center_right_label.add_css_class("caption");
+        center_right_label.set_halign(gtk4::Align::End);
+        center_hints.append(&center_left_label);
+        center_hints.append(&center_right_label);
+        center_hints.set_margin_start(12);
+        center_hints.set_margin_end(12);
+        center_hints.set_margin_bottom(4);
+
+        let center_hint_row = gtk4::ListBoxRow::new();
+        center_hint_row.set_child(Some(&center_hints));
+        center_hint_row.set_activatable(false);
+        center_hint_row.set_selectable(false);
+
         // --- Controls group ---
         let controls_group = adw::PreferencesGroup::new();
         controls_group.set_title("Pattern");
@@ -250,6 +282,8 @@ impl WallrusWindow {
         controls_group.add(&speed_row);
         controls_group.add(&blend_row);
         controls_group.add(&blend_hint_row);
+        controls_group.add(&center_row);
+        controls_group.add(&center_hint_row);
 
         // =====================================================================
         // Effects section — fullscreen effects applied to all shaders
@@ -477,11 +511,18 @@ impl WallrusWindow {
             let scale_scale = scale_scale.clone();
             let speed_row = speed_row.clone();
             let speed_scale = speed_scale.clone();
+            let center_row = center_row.clone();
+            let center_hint_row = center_hint_row.clone();
+            let center_scale = center_scale.clone();
             move |name: &str| {
                 let controls = shader_presets::controls_for(name);
                 angle_row.set_visible(controls.has_angle);
                 scale_row.set_visible(controls.has_scale);
                 speed_row.set_visible(controls.has_speed);
+                center_row.set_visible(controls.has_center);
+                center_hint_row.set_visible(controls.has_center);
+                // Reset center slider to default when switching presets
+                center_scale.set_value(0.0);
                 // Update scale slider range per preset
                 let (smin, smax, sstep, sdefault) = controls.scale_range;
                 scale_scale.set_range(smin, smax);
@@ -496,7 +537,7 @@ impl WallrusWindow {
             }
         };
 
-        update_control_visibility("Gradient");
+        update_control_visibility("Bars");
 
         // --- Preset change ---
         {
@@ -554,6 +595,16 @@ impl WallrusWindow {
             blend_scale.connect_value_changed(move |scale| {
                 if let Some(ref mut renderer) = *state.borrow_mut() {
                     renderer.blend = scale.value() as f32;
+                }
+            });
+        }
+
+        // --- Center change ---
+        {
+            let state = state.clone();
+            center_scale.connect_value_changed(move |scale| {
+                if let Some(ref mut renderer) = *state.borrow_mut() {
+                    renderer.center = scale.value() as f32;
                 }
             });
         }

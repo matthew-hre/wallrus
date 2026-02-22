@@ -4,7 +4,7 @@
 
 /// Names of all available presets, in display order
 pub fn preset_names() -> &'static [&'static str] {
-    &["Gradient", "Plasma", "Waves", "Terrain"]
+    &["Bars", "Circle", "Plasma", "Waves", "Terrain"]
 }
 
 /// Returns the shared vertex shader source (fullscreen quad passthrough)
@@ -22,10 +22,11 @@ void main() {
 /// Returns the fragment shader source for a given preset name
 pub fn fragment_source_for(name: &str) -> Option<String> {
     match name {
-        "Gradient" => Some(GRADIENT_FRAG.to_string()),
+        "Bars" => Some(GRADIENT_FRAG.to_string()),
         "Plasma" => Some(PLASMA_FRAG.to_string()),
         "Waves" => Some(WAVES_FRAG.to_string()),
         "Terrain" => Some(TERRAIN_FRAG.to_string()),
+        "Circle" => Some(CONCENTRIC_FRAG.to_string()),
         _ => None,
     }
 }
@@ -35,6 +36,7 @@ pub struct PresetControls {
     pub has_angle: bool,
     pub has_scale: bool,
     pub has_speed: bool,
+    pub has_center: bool,
     /// Label for the speed/time slider (e.g. "Speed" or "Time")
     pub speed_label: &'static str,
     /// Range for the speed/time slider: (min, max, step, default)
@@ -45,10 +47,11 @@ pub struct PresetControls {
 
 pub fn controls_for(name: &str) -> PresetControls {
     match name {
-        "Gradient" => PresetControls {
+        "Bars" => PresetControls {
             has_angle: true,
             has_scale: false,
             has_speed: false,
+            has_center: false,
             speed_label: "Speed",
             speed_range: (0.0, 3.0, 0.1, 1.0),
             scale_range: (0.1, 5.0, 0.1, 1.0),
@@ -57,6 +60,7 @@ pub fn controls_for(name: &str) -> PresetControls {
             has_angle: false,
             has_scale: true,
             has_speed: true,
+            has_center: false,
             speed_label: "Time",
             speed_range: (0.0, 20.0, 0.1, 0.0),
             scale_range: (0.1, 5.0, 0.1, 1.0),
@@ -65,6 +69,7 @@ pub fn controls_for(name: &str) -> PresetControls {
             has_angle: true,
             has_scale: true,
             has_speed: true,
+            has_center: false,
             speed_label: "Time",
             speed_range: (0.0, 20.0, 0.1, 0.0),
             scale_range: (0.1, 5.0, 0.1, 1.0),
@@ -73,14 +78,25 @@ pub fn controls_for(name: &str) -> PresetControls {
             has_angle: false,
             has_scale: true,
             has_speed: true,
+            has_center: false,
             speed_label: "Time",
             speed_range: (0.0, 20.0, 0.1, 0.0),
             scale_range: (0.1, 2.0, 0.01, 0.5),
+        },
+        "Circle" => PresetControls {
+            has_angle: false,
+            has_scale: true,
+            has_speed: false,
+            has_center: true,
+            speed_label: "Time",
+            speed_range: (0.0, 20.0, 0.1, 0.0),
+            scale_range: (0.5, 3.0, 0.1, 1.0),
         },
         _ => PresetControls {
             has_angle: true,
             has_scale: false,
             has_speed: false,
+            has_center: false,
             speed_label: "Speed",
             speed_range: (0.0, 3.0, 0.1, 1.0),
             scale_range: (0.1, 5.0, 0.1, 1.0),
@@ -401,6 +417,76 @@ void main() {
 
     // Map to palette
     vec3 color = paletteColor(height);
+
+    // Apply noise grain
+    float n = hash(gl_FragCoord.xy);
+    color += n * uNoise * 0.3;
+    color = clamp(color, 0.0, 1.0);
+    fragColor = vec4(color, 1.0);
+}
+"#
+);
+
+const CONCENTRIC_FRAG: &str = concat!(
+    r#"#version 330 core
+uniform vec3 iResolution;
+uniform float iTime;
+uniform float uScale;
+uniform float uCenter;
+"#,
+    r#"
+uniform vec3 uColor1;
+uniform vec3 uColor2;
+uniform vec3 uColor3;
+uniform vec3 uColor4;
+uniform float uBlend;
+uniform float uSwirl;
+uniform float uNoise;
+
+vec2 swirlUV(vec2 uv) {
+    vec2 c = uv - 0.5;
+    float r = length(c);
+    float angle = uSwirl * (1.0 - r);
+    float ca = cos(angle);
+    float sa = sin(angle);
+    return vec2(ca * c.x - sa * c.y, sa * c.x + ca * c.y) + 0.5;
+}
+
+vec3 paletteColor(float t) {
+    t = clamp(t, 0.0, 1.0);
+    float fw = uBlend * 0.25;
+    float f1 = (fw > 0.0001) ? smoothstep(0.25 - fw, 0.25 + fw, t) : step(0.25, t);
+    float f2 = (fw > 0.0001) ? smoothstep(0.50 - fw, 0.50 + fw, t) : step(0.50, t);
+    float f3 = (fw > 0.0001) ? smoothstep(0.75 - fw, 0.75 + fw, t) : step(0.75, t);
+    vec3 color = uColor1;
+    color = mix(color, uColor2, f1);
+    color = mix(color, uColor3, f2);
+    color = mix(color, uColor4, f3);
+    return color;
+}
+
+float hash(vec2 p) {
+    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+}
+"#,
+    r#"
+out vec4 fragColor;
+
+void main() {
+    vec2 uv = swirlUV(gl_FragCoord.xy / iResolution.xy);
+
+    // Offset center horizontally based on uCenter
+    vec2 center = vec2(0.5 + uCenter * 0.4, 0.5);
+
+    // Distance from offset center
+    float d = length(uv - center);
+
+    // Map distance to 0-1 across the visible radius, scaled
+    float t = clamp(d * uScale, 0.0, 1.0);
+
+    vec3 color = paletteColor(t);
 
     // Apply noise grain
     float n = hash(gl_FragCoord.xy);
