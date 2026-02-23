@@ -115,15 +115,17 @@ pub fn bundled_palettes_dir() -> Option<PathBuf> {
 }
 
 /// Get the user palettes directory (~/.local/share/wallrus/palettes/).
-/// Returns the path only if the directory already exists.
+/// Creates it if it doesn't exist.
 pub fn user_palettes_dir() -> Option<PathBuf> {
     let data_dir = dirs::data_dir()?;
     let palette_dir = data_dir.join("wallrus").join("palettes");
-    if palette_dir.is_dir() {
-        Some(palette_dir)
-    } else {
-        None
+    if !palette_dir.exists() {
+        if let Err(e) = std::fs::create_dir_all(&palette_dir) {
+            eprintln!("Failed to create user palettes dir: {}", e);
+            return None;
+        }
     }
+    Some(palette_dir)
 }
 
 /// Scan a palette root directory for categorized images.
