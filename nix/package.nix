@@ -68,9 +68,6 @@ rustPlatform.buildRustPackage {
     gappsWrapperArgs+=(
       # Ensure libEGL.so.1 / libGLX.so.0 are available for dlopen at runtime
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [libglvnd]}"
-      # Shaders require desktop GL (GLSL 330 core); without this GTK4 may
-      # default to a GLES context on Wayland which only supports GLSL ES
-      --set GDK_DEBUG gl-prefer-gl
     )
   '';
 
