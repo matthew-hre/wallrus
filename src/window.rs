@@ -61,16 +61,22 @@ impl WallrusWindow {
         // =====================================================================
 
         // Load all categories at startup
-        let all_categories = palette::list_palette_categories();
-        let category_names: Vec<String> = all_categories.keys().cloned().collect();
+        let all_categories: Rc<RefCell<palette::PaletteCategories>> =
+            Rc::new(RefCell::new(palette::list_palette_categories()));
+        let category_names: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(
+            all_categories.borrow().keys().cloned().collect(),
+        ));
 
         // Category dropdown
-        let category_str_refs: Vec<&str> = category_names.iter().map(|s| s.as_str()).collect();
+        let category_names_borrowed = category_names.borrow();
+        let category_str_refs: Vec<&str> =
+            category_names_borrowed.iter().map(|s| s.as_str()).collect();
         let category_string_list = gtk4::StringList::new(&category_str_refs);
+        drop(category_names_borrowed);
         let category_row = adw::ComboRow::new();
         category_row.set_title("Category");
         category_row.set_model(Some(&category_string_list));
-        if !category_names.is_empty() {
+        if !category_names.borrow().is_empty() {
             category_row.set_selected(0);
         }
 
@@ -98,10 +104,12 @@ impl WallrusWindow {
         palette_scroll.set_policy(gtk4::PolicyType::Never, gtk4::PolicyType::Automatic);
 
         // --- Helper: populate FlowBox with images from a category ---
+        // When `is_custom` is true, a delete button overlay is shown on each thumbnail.
+        // `on_delete` is called after a palette is deleted to refresh the view.
         let populate_flowbox = {
             let flowbox = palette_flowbox.clone();
             let paths = palette_paths.clone();
-            move |images: &[PathBuf]| {
+            Rc::new(move |images: &[PathBuf], is_custom: bool, on_delete: Option<Rc<dyn Fn()>>| {
                 // Clear existing children
                 while let Some(child) = flowbox.first_child() {
                     flowbox.remove(&child);
@@ -109,7 +117,12 @@ impl WallrusWindow {
                 paths.borrow_mut().clear();
 
                 if images.is_empty() {
-                    let label = gtk4::Label::new(Some("No palettes in this category."));
+                    let msg = if is_custom {
+                        "No saved palettes yet."
+                    } else {
+                        "No palettes in this category."
+                    };
+                    let label = gtk4::Label::new(Some(msg));
                     label.set_wrap(true);
                     label.set_justify(gtk4::Justification::Center);
                     label.add_css_class("dim-label");
@@ -132,7 +145,48 @@ impl WallrusWindow {
                             image.set_size_request(80, 80);
                             image.set_content_fit(gtk4::ContentFit::Cover);
 
-                            flowbox.insert(&image, -1);
+                            if is_custom {
+                                // Wrap in overlay with delete button
+                                let overlay = gtk4::Overlay::new();
+                                overlay.set_child(Some(&image));
+
+                                let delete_btn = gtk4::Button::from_icon_name("window-close-symbolic");
+                                delete_btn.add_css_class("circular");
+                                delete_btn.add_css_class("osd");
+                                delete_btn.set_halign(gtk4::Align::End);
+                                delete_btn.set_valign(gtk4::Align::Start);
+                                delete_btn.set_margin_top(2);
+                                delete_btn.set_margin_end(2);
+                                delete_btn.set_tooltip_text(Some("Delete palette"));
+
+                                let path_clone = path.clone();
+                                let on_delete_clone = on_delete.clone();
+                                delete_btn.connect_clicked(move |btn| {
+                                    let win = btn.root().and_then(|r| r.downcast::<adw::ApplicationWindow>().ok());
+                                    match palette::delete_palette_image(&path_clone) {
+                                        Ok(()) => {
+                                            if let Some(ref w) = win {
+                                                show_toast(w, "Palette deleted");
+                                            }
+                                            if let Some(ref cb) = on_delete_clone {
+                                                cb();
+                                            }
+                                        }
+                                        Err(e) => {
+                                            if let Some(ref w) = win {
+                                                show_toast(w, &format!("Failed to delete: {}", e));
+                                            } else {
+                                                eprintln!("Failed to delete palette: {}", e);
+                                            }
+                                        }
+                                    }
+                                });
+
+                                overlay.add_overlay(&delete_btn);
+                                flowbox.insert(&overlay, -1);
+                            } else {
+                                flowbox.insert(&image, -1);
+                            }
                             paths.borrow_mut().push(path.clone());
                         }
                         Err(e) => {
@@ -144,11 +198,11 @@ impl WallrusWindow {
                         }
                     }
                 }
-            }
+            })
         };
 
         // Show "no palettes" message if no categories exist at all
-        if category_names.is_empty() {
+        if category_names.borrow().is_empty() {
             let label = gtk4::Label::new(Some(
                 "No palette images found.",
             ));
@@ -160,8 +214,11 @@ impl WallrusWindow {
             palette_flowbox.insert(&label, -1);
         } else {
             // Populate with the first category
-            if let Some(images) = all_categories.get(&category_names[0]) {
-                populate_flowbox(images);
+            let names = category_names.borrow();
+            let cats = all_categories.borrow();
+            if let Some(images) = cats.get(&names[0]) {
+                let is_custom = palette::is_custom_category(&names[0]);
+                populate_flowbox(images, is_custom, None);
             }
         }
 
@@ -183,10 +240,10 @@ impl WallrusWindow {
         color_dialog.set_with_alpha(false);
 
         let default_colors: [[f32; 3]; 4] = [
-            [0.11, 0.25, 0.60],
-            [0.90, 0.35, 0.50],
-            [0.20, 0.60, 0.40],
-            [0.80, 0.70, 0.20],
+            [0.80, 0.33, 0.00],
+            [0.93, 0.53, 0.07],
+            [1.00, 0.75, 0.15],
+            [1.00, 0.92, 0.35],
         ];
 
         let color_buttons: Vec<gtk4::ColorDialogButton> = default_colors
@@ -206,6 +263,12 @@ impl WallrusWindow {
         for btn in &color_buttons {
             color_box.append(btn);
         }
+
+        let save_palette_button = gtk4::Button::from_icon_name("document-save-symbolic");
+        save_palette_button.add_css_class("flat");
+        save_palette_button.add_css_class("circular");
+        save_palette_button.set_tooltip_text(Some("Save as custom palette"));
+        color_box.append(&save_palette_button);
 
         let color_picker_row = gtk4::ListBoxRow::new();
         color_picker_row.set_child(Some(&color_box));
@@ -704,15 +767,121 @@ impl WallrusWindow {
         // =====================================================================
 
         // --- Category dropdown: repopulate FlowBox when category changes ---
+        // Also used by save/delete to refresh the current view.
+
+        // Shared refresh: reloads categories from disk and repopulates the current view.
+        let refresh_current_category: Rc<RefCell<Option<Rc<dyn Fn()>>>> =
+            Rc::new(RefCell::new(None));
+
         {
             let all_cats = all_categories.clone();
             let cat_names = category_names.clone();
             let populate = populate_flowbox.clone();
+            let category_row_ref = category_row.clone();
+            let refresh_ref = refresh_current_category.clone();
+
+            let do_refresh: Rc<dyn Fn()> = Rc::new(move || {
+                // Reload from disk
+                let new_cats = palette::list_palette_categories();
+                let new_names: Vec<String> = new_cats.keys().cloned().collect();
+
+                // Capture current selection BEFORE replacing the model (set_model resets index to 0)
+                let prev_idx = category_row_ref.selected() as usize;
+                let prev_name = cat_names.borrow().get(prev_idx).cloned();
+
+                // Update the dropdown model
+                let str_refs: Vec<&str> = new_names.iter().map(|s| s.as_str()).collect();
+                let new_model = gtk4::StringList::new(&str_refs);
+                category_row_ref.set_model(Some(&new_model));
+
+                *cat_names.borrow_mut() = new_names.clone();
+                *all_cats.borrow_mut() = new_cats;
+
+                // Find the previously selected category in the new list, or default to 0
+                let new_idx = prev_name
+                    .as_ref()
+                    .and_then(|name| new_names.iter().position(|n| n == name))
+                    .unwrap_or(0);
+
+                if !new_names.is_empty() {
+                    // Repopulate flowbox for the selected category
+                    let cats = all_cats.borrow();
+                    if let Some(images) = cats.get(&new_names[new_idx]) {
+                        let is_custom = palette::is_custom_category(&new_names[new_idx]);
+                        populate(images, is_custom, Some(refresh_ref.borrow().as_ref().unwrap().clone()));
+                    }
+                    // Set selected after populating to avoid double-trigger
+                    category_row_ref.set_selected(new_idx as u32);
+                }
+            });
+
+            *refresh_current_category.borrow_mut() = Some(do_refresh.clone());
+
+            // Connect category dropdown change
+            let all_cats2 = all_categories.clone();
+            let cat_names2 = category_names.clone();
+            let populate2 = populate_flowbox.clone();
+            let refresh_for_delete = refresh_current_category.clone();
             category_row.connect_selected_notify(move |combo| {
                 let idx = combo.selected() as usize;
-                if let Some(name) = cat_names.get(idx) {
-                    if let Some(images) = all_cats.get(name) {
-                        populate(images);
+                let names = cat_names2.borrow();
+                if let Some(name) = names.get(idx) {
+                    let cats = all_cats2.borrow();
+                    if let Some(images) = cats.get(name) {
+                        let is_custom = palette::is_custom_category(name);
+                        let on_delete = if is_custom {
+                            Some(refresh_for_delete.borrow().as_ref().unwrap().clone())
+                        } else {
+                            None
+                        };
+                        populate2(images, is_custom, on_delete);
+                    }
+                }
+            });
+        }
+
+        // --- Save palette button handler ---
+        {
+            let color_btns = color_buttons.clone();
+            let window_ref = window.clone();
+            let refresh = refresh_current_category.clone();
+            let cat_names_ref = category_names.clone();
+            let category_row_ref = category_row.clone();
+            save_palette_button.connect_clicked(move |_| {
+                let colors: [[f32; 3]; 4] = [
+                    {
+                        let c = color_btns[0].rgba();
+                        [c.red(), c.green(), c.blue()]
+                    },
+                    {
+                        let c = color_btns[1].rgba();
+                        [c.red(), c.green(), c.blue()]
+                    },
+                    {
+                        let c = color_btns[2].rgba();
+                        [c.red(), c.green(), c.blue()]
+                    },
+                    {
+                        let c = color_btns[3].rgba();
+                        [c.red(), c.green(), c.blue()]
+                    },
+                ];
+
+                match palette::save_palette_image(&colors) {
+                    Ok(_) => {
+                        // Refresh categories and switch to Custom
+                        if let Some(ref cb) = *refresh.borrow() {
+                            cb();
+                        }
+                        // Switch to Custom category
+                        let names = cat_names_ref.borrow();
+                        if let Some(idx) = names.iter().position(|n| palette::is_custom_category(n)) {
+                            category_row_ref.set_selected(idx as u32);
+                        }
+                        show_toast(&window_ref, "Palette saved");
+                    }
+                    Err(e) => {
+                        show_toast(&window_ref, &format!("Failed to save palette: {}", e));
                     }
                 }
             });

@@ -29,6 +29,9 @@ For those who prefer minimalist, colorful wallpapers and like changing colors on
   dedicated parameters (angle, scale, time scrub, center position)
 - **Hundreds of bundled palette images** across several categories (cold, dark, fall,
   gradient, light, pastel, retro, sunset, warm, winter, etc.)
+- **Custom palettes** — tweak individual colors with the color pickers, then save
+  your palette for later. Saved palettes appear in a "Custom" category and can
+  be deleted at any time.
 - **Blend control** — go from hard flag-like stripes to fully smooth gradients
 - **Effects** - Distortion, lightning and noise
 - **Export** — PNG or JPEG at 1080p, 1440p, or 4K via a native save dialog
