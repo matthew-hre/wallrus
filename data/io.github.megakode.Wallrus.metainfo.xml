@@ -19,6 +19,7 @@
   </description>
   <launchable type="desktop-id">io.github.megakode.Wallrus.desktop</launchable>
   <url type="homepage">https://github.com/megakode/wallrus</url>
+  <url type="vcs-browser">https://github.com/megakode/wallrus</url>
   <screenshots>
     <screenshot type="default">
       <caption>Wallrus main window showing palette selection, pattern controls, and live preview</caption>
