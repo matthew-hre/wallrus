@@ -31,13 +31,9 @@ For those who prefer minimalist, colorful wallpapers and like changing colors on
   gradient, light, pastel, retro, sunset, warm, winter, etc.)
 - **Blend control** — go from hard flag-like stripes to fully smooth gradients
 - **Effects** - Distortion, lightning and noise
-- **Export** — PNG or JPEG at 1080p, 1440p, or 4K (default auto-detected from
-  your display)
-- **Set as wallpaper** — writes to `~/.local/share/backgrounds/` and applies
-  via `gsettings`.
-- **Ligh / Dark mode** - Set either light or dark wallpaper when exporting, to easily tweak and create a matching pair.
-- **Custom palettes** - drop 1×4 px palette images into
-  `~/.local/share/wallrus/palettes/<category>/` and they appear automatically
+- **Export** — PNG or JPEG at 1080p, 1440p, or 4K via a native save dialog
+  (default resolution auto-detected from your display)
+- **Set as wallpaper** — uses the XDG Desktop Portal to set your GNOME wallpaper
 - **Keyboard shortcuts** — Ctrl+E (export PNG), Ctrl+Shift+E (export JPEG),
   Ctrl+Shift+W (set as wallpaper)
 
@@ -116,26 +112,6 @@ and `rustfmt` is also available:
 ```
 nix develop
 ```
-
-## Custom palettes
-
-Palette images are 1x4 px PNGs — one pixel per color, top to bottom (4 colors
-total). Wallrus scales them to 80x80 thumbnails in the UI and reads each pixel
-directly to extract colors.
-
-Place them in subdirectories under `~/.local/share/wallrus/palettes/`:
-
-```
-~/.local/share/wallrus/palettes/
-├── mytheme/
-│   ├── ocean.png
-│   └── forest.png
-└── another-category/
-    └── fire.png
-```
-
-Subdirectory names become selectable categories in the UI (capitalized
-automatically). Restart Wallrus to pick up new palettes.
 
 ## License
 

@@ -1,5 +1,4 @@
 use image::{ImageBuffer, Rgba};
-use std::path::PathBuf;
 
 /// Export resolution presets
 #[derive(Debug, Clone, Copy)]
@@ -75,19 +74,4 @@ pub fn save_pixels(
     }
 
     Ok(())
-}
-
-/// Get the default export directory, creating it if needed
-pub fn default_export_dir() -> Result<PathBuf, String> {
-    let pictures = dirs::picture_dir()
-        .or_else(|| dirs::home_dir().map(|h| h.join("Pictures")))
-        .ok_or("Could not determine pictures directory")?;
-
-    let export_dir = pictures.join("Wallrus");
-    if !export_dir.exists() {
-        std::fs::create_dir_all(&export_dir)
-            .map_err(|e| format!("Failed to create export directory: {}", e))?;
-    }
-
-    Ok(export_dir)
 }

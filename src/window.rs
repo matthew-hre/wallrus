@@ -150,7 +150,7 @@ impl WallrusWindow {
         // Show "no palettes" message if no categories exist at all
         if category_names.is_empty() {
             let label = gtk4::Label::new(Some(
-                "No palette images found.\nAdd folders with .png files to\n~/.local/share/wallrus/palettes/",
+                "No palette images found.",
             ));
             label.set_wrap(true);
             label.set_justify(gtk4::Justification::Center);
@@ -1090,19 +1090,6 @@ impl WallrusWindow {
                     }
                 };
 
-                let export_dir = match export::default_export_dir() {
-                    Ok(dir) => dir,
-                    Err(e) => {
-                        show_toast(&window_ref, &format!("Export failed: {}", e));
-                        return;
-                    }
-                };
-
-                let timestamp = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap_or_default()
-                    .as_secs();
-
                 let preset_name = {
                     let state_ref = state.borrow();
                     state_ref
@@ -1111,22 +1098,68 @@ impl WallrusWindow {
                         .unwrap_or_else(|| "wallpaper".to_string())
                 };
 
+                let timestamp = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs();
+
                 let filename = format!(
                     "wallrus_{}_{}.{}",
                     preset_name.to_lowercase(),
                     timestamp,
                     format.extension()
                 );
-                let path = export_dir.join(&filename);
 
-                match export::save_pixels(&pixels, w, h, &path, format) {
-                    Ok(()) => {
-                        show_toast(&window_ref, &format!("Saved to {}", path.display()));
+                let dialog = gtk4::FileDialog::new();
+                dialog.set_initial_name(Some(&filename));
+
+                let filter = gtk4::FileFilter::new();
+                match format {
+                    ExportFormat::Png => {
+                        filter.set_name(Some("PNG images"));
+                        filter.add_mime_type("image/png");
+                        filter.add_suffix("png");
                     }
-                    Err(e) => {
-                        show_toast(&window_ref, &format!("Export failed: {}", e));
+                    ExportFormat::Jpeg => {
+                        filter.set_name(Some("JPEG images"));
+                        filter.add_mime_type("image/jpeg");
+                        filter.add_suffix("jpg");
+                        filter.add_suffix("jpeg");
                     }
                 }
+                dialog.set_default_filter(Some(&filter));
+
+                let window_clone = window_ref.clone();
+                dialog.save(
+                    Some(&window_ref),
+                    None::<&gio::Cancellable>,
+                    move |result| match result {
+                        Ok(file) => {
+                            if let Some(path) = file.path() {
+                                match export::save_pixels(&pixels, w, h, &path, format) {
+                                    Ok(()) => {
+                                        show_toast(
+                                            &window_clone,
+                                            &format!("Saved to {}", path.display()),
+                                        );
+                                    }
+                                    Err(e) => {
+                                        show_toast(
+                                            &window_clone,
+                                            &format!("Export failed: {}", e),
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            // User cancelled — not an error worth reporting
+                            if !e.matches(gio::IOErrorEnum::Cancelled) {
+                                show_toast(&window_clone, &format!("Export failed: {}", e));
+                            }
+                        }
+                    },
+                );
             }
         };
 

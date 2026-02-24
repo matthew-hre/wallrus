@@ -41,9 +41,9 @@ Build a GNOME application called **Wallrus** (app ID: `io.github.megakode.Wallru
 - **No shaders animate continuously.** Plasma and Waves both use `uSpeed` as a **static time scrub value**. The slider is labeled "Time" (range 0–20, default 0) for Plasma, Waves, and Terrain. Bars doesn't use time at all.
 - **Palette system:** Users browse 400x400px palette images (4 horizontal color bands, 100px each). Colors extracted by sampling center pixel of each band at y=50,150,250,350. Displayed as 80x80px thumbnails in a `GtkFlowBox` with 200px fixed-height scrollable area. The FlowBox scrolled window is wrapped in a `gtk4::ListBoxRow` so it renders inside the PreferencesGroup's rounded rectangle together with the category dropdown.
 - **Category system:** Palette images are organized in **subfolders** within the palette directories. Subfolders become categories shown in a dropdown above the FlowBox. Selecting a category repopulates the FlowBox. Files directly in the root go to "Uncategorized". Category names are capitalized.
-- **Palette image locations:** Both bundled (`data/palettes/`) AND user directory (`~/.local/share/wallrus/palettes/`).
+- **Palette image locations:** Bundled (`data/palettes/`).
 - **No manual color pickers** — colors come exclusively from selecting palette image thumbnails.
-- **Export:** PNG and JPEG at 1080p, 1440p, and 4K resolutions, saved to `~/Pictures/Wallrus/`. Default resolution auto-detected from the current display.
+- **Export:** PNG and JPEG at 1080p, 1440p, and 4K resolutions via native save dialog. Default resolution auto-detected from the current display.
 - **Wallpaper integration:** Save to `~/.local/share/backgrounds/` and set via `gsettings` (both light and dark mode URIs)
 - **Keyboard shortcuts:** Ctrl+E (Export PNG), Ctrl+Shift+E (Export JPEG), Ctrl+Shift+W (Set as Wallpaper)
 - **Layout:** Two-column layout. Left column (scrollable, 320px min width): Palette group + Pattern controls group. Right column (expanding): Preview group + Effects group + Lighting group + Export group + buttons. Window default size 1100x700.
@@ -80,7 +80,7 @@ Build a GNOME application called **Wallrus** (app ID: `io.github.megakode.Wallru
 - `Cargo.toml` — Project config (gtk4 0.9 w/ v4_10, libadwaita 0.7 w/ v1_4, glow 0.14, image 0.25, dirs 5.0, libc 0.2). 19 lines.
 - `src/main.rs` — Entry point (has `mod palette`). 17 lines.
 - `src/application.rs` — AdwApplication setup. 31 lines.
-- `src/palette.rs` — Category-aware palette image extraction + directory listing. Scans bundled `data/palettes/` and user `~/.local/share/wallrus/palettes/`. 178 lines.
+- `src/palette.rs` — Category-aware palette image extraction + directory listing. Scans bundled `data/palettes/`. 178 lines.
 - `src/gl_renderer.rs` — GL context, RendererState (all uniform fields: color1-4, angle, scale, speed, blend, distort_type, distort_strength, ripple_freq, noise, center, dither, lighting_type, light_strength, bevel_width, light_angle), fullscreen quad, render-to-pixels. Contains `gl_loader` module for EGL/GLX dynamic loading.
 - `src/shader_presets.rs` — 5 shader presets (Bars, Circle, Plasma, Waves, Terrain) with embedded GLSL fragment sources. Each shader includes shared functions (swirlUV, rippleUV, distortUV, paletteColor, applyLighting, hash, bayer4x4, applyDither) via `concat!`. PresetControls struct with `has_angle`, `has_scale`, `has_speed`, `has_center`, `speed_label`, `speed_range`, `scale_range`.
 - `src/window.rs` — Two-column layout: left (palette + pattern controls with blend/center hints), right (preview + effects with distortion dropdown/strength/frequency + noise/dither + lighting with type/strength/width/angle + export). All UI construction and signal wiring.

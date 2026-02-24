@@ -52,10 +52,6 @@ pub fn list_palette_categories() -> PaletteCategories {
         collect_categorized_images(&dir, &mut categories);
     }
 
-    if let Some(dir) = user_palettes_dir() {
-        collect_categorized_images(&dir, &mut categories);
-    }
-
     // Sort images within each category by filename
     for images in categories.values_mut() {
         images.sort_by(|a, b| {
@@ -112,20 +108,6 @@ pub fn bundled_palettes_dir() -> Option<PathBuf> {
     }
 
     None
-}
-
-/// Get the user palettes directory (~/.local/share/wallrus/palettes/).
-/// Creates it if it doesn't exist.
-pub fn user_palettes_dir() -> Option<PathBuf> {
-    let data_dir = dirs::data_dir()?;
-    let palette_dir = data_dir.join("wallrus").join("palettes");
-    if !palette_dir.exists() {
-        if let Err(e) = std::fs::create_dir_all(&palette_dir) {
-            eprintln!("Failed to create user palettes dir: {}", e);
-            return None;
-        }
-    }
-    Some(palette_dir)
 }
 
 /// Scan a palette root directory for categorized images.
